@@ -1,36 +1,56 @@
 package com.hiro.testeVirtualThreadsCSV.processors;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.Duration;
 
 public class Processor {
 
-    public Runnable executar(int processoId) {
-        return () -> {
-            System.out.println(Thread.currentThread() + " executando processo: " + processoId);
+    private final static String CSVFILE = "C:/Users/gabri/Downloads/TesteVirtualThreadsSpringCSV.CSV";
 
-            try {
+    public Runnable executar(int processoId) {
+
+        return () -> {
+
+//            System.out.println(Thread.currentThread() + " executando processo: " + processoId);
+
+            try (CSVReader reader = new CSVReader(new FileReader(CSVFILE))) {
 
                 Thread.sleep(Duration.ofSeconds(1));
 
-            } catch (InterruptedException e) {
+                String[] nextLine;
+                boolean skipHeader = true;
+
+                while((nextLine = reader.readNext()) != null) {
+
+                    if(skipHeader) {
+
+                        skipHeader = false;
+                        continue;
+
+                    }
+
+                    if(nextLine[0].equals(String.valueOf(processoId))) {
+
+                        System.out.println("Processo: " + processoId + " - CSV: " + nextLine[0]);
+
+                    }
+
+                }
+
+            } catch (IOException | CsvValidationException | InterruptedException e) {
 
                 throw new RuntimeException(e);
 
             }
 
-            System.out.println(Thread.currentThread() + " processo finalizado: " + processoId);
+//            System.out.println(Thread.currentThread() + " processo finalizado: " + processoId);
+
         };
     }
-
-//    public Runnable executarCSV(String cell, int processoId) {
-//        return () -> {
-//
-//            System.out.println(cell + "\t ");
-//            System.out.println(Thread.currentThread());
-//            System.out.println("Processo: " + processoId + " finalizado!");
-////            System.out.println(Thread.currentThread());
-//
-//        };
-//    }
 
 }
